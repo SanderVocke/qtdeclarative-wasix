@@ -9,6 +9,7 @@ qt_get_tool_target_name(target_name qmldom)
 qt_internal_add_tool(${target_name}
     TARGET_DESCRIPTION "QML Dom handler"
     TOOLS_TARGET Qml # special case
+    FORCE_BUILD
     SOURCES
         qmldomtool.cpp
     LIBRARIES

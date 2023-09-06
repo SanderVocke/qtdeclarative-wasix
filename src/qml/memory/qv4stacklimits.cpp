@@ -108,12 +108,19 @@ static StackProperties createStackProperties(void *base, qsizetype size = Platfo
 // may grow. Use rlimit instead. rlimit does not work for secondary
 // threads, though. If getrlimit fails, we assume the platform
 // stack size.
+#ifndef WASIX
+#define QT_SUPPORT_GETRLIMIT
+#endif
 static qsizetype getMainStackSizeFromRlimit()
 {
+#ifdef QT_SUPPORT_GETRLIMIT
     rlimit limit;
     return (getrlimit(RLIMIT_STACK, &limit) == 0 && limit.rlim_cur != RLIM_INFINITY)
             ? qsizetype(limit.rlim_cur)
             : qsizetype(PlatformStackSize);
+#else
+    return qsizetype(PlatformStackSize);
+#endif
 }
 #endif
 
@@ -322,10 +329,15 @@ static StackSegment stackSegmentFromProc()
     return {0, 0};
 }
 
+#ifndef WASIX
+#define SUPPORT_SYSCALL_GETTID
+#endif
 StackProperties stackProperties()
 {
+#ifdef SUPPORT_SYSCALL_GETTID
     if (getpid() != static_cast<pid_t>(syscall(SYS_gettid)))
         return stackPropertiesGeneric();
+#endif
 
     // On linux (including android), the pthread functions are expensive
     // and unreliable on the main thread.
